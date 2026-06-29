@@ -34,7 +34,7 @@ Apply it to:
 
 ---
 
-### Step 1 — Identify the Problem
+### Step 1 - Identify the Problem
 
 **What this means:** Gather all available facts before forming any conclusion.
 
@@ -71,7 +71,7 @@ asking the user any additional questions.
 
 ---
 
-### Step 2 — Establish a Theory of Probable Cause
+### Step 2 - Establish a Theory of Probable Cause
 
 **What this means:** Form a hypothesis - a specific, testable explanation for what is causing
 the observed symptoms - before running any diagnostic commands or making any changes.
@@ -97,9 +97,9 @@ A good hypothesis answers all three of these:
 2. Why is it failing (proposed mechanism)?
 3. What evidence would confirm or refute this hypothesis?
 
-**Example — poor hypothesis:** "The network might be broken."
+**Example - poor hypothesis:** "The network might be broken."
 
-**Example — strong hypothesis:** "The user's workstation has lost its DHCP lease and is
+**Example - strong hypothesis:** "The user's workstation has lost its DHCP lease and is
 operating with an APIPA address (169.254.x.x), which is why it cannot reach network resources.
 Cause is likely the DHCP lease expiring while the machine was off the network. Confirmed by
 running `ipconfig` and seeing a 169.254.x.x address with no default gateway."
@@ -239,7 +239,7 @@ user confirmation.
 
 ---
 
-### Step 7 — Document Findings, Actions, and Outcomes
+### Step 7 - Document Findings, Actions, and Outcomes
 
 **What this means:** Write a complete record of the problem, diagnosis, actions taken, resolution,
 and root cause - in the ticket - before closing.
