@@ -91,7 +91,7 @@ $reportLines = New-Object System.Collections.Generic.List[string]
 
 function Write-ReportLine {
     param([string]$Text = "")
-    Write-Host $Text
+    Write-Output $Text
     $reportLines.Add($Text)
 }
 
@@ -300,9 +300,9 @@ Write-ReportLine "use Event Viewer with the timestamps and Event IDs noted above
 if ($OutputPath) {
     try {
         $reportLines | Out-File -FilePath $OutputPath -Encoding UTF8 -ErrorAction Stop
-        Write-Host ""
-        Write-Host "Report saved to: $OutputPath" -ForegroundColor Green
-        Write-Host "Attach this file to the ticket per diagnostic-report-template.md" -ForegroundColor Green
+        Write-Output ""
+        Write-Output "Report saved to: $OutputPath" -ForegroundColor Green
+        Write-Output "Attach this file to the ticket per diagnostic-report-template.md" -ForegroundColor Green
     }
     catch {
         Write-Warning "Could not save report to file: $($_.Exception.Message)"
@@ -310,6 +310,6 @@ if ($OutputPath) {
     }
 }
 else {
-    Write-Host ""
-    Write-Host "No output file path available — report displayed in console only." -ForegroundColor Yellow
+    Write-Output ""
+    Write-Output "No output file path available — report displayed in console only." -ForegroundColor Yellow
 }
