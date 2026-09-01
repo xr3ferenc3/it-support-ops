@@ -116,6 +116,45 @@ jobs:
       - name: Run ${{ matrix.script }} as standard user
         run: "./scripts/linux/${{ matrix.script }}"
 
+  verify-module-sync:
+    name: Verify module scripts match scripts/windows (single source of truth)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Diff scripts/windows against module/ITSupportOps/Scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $source = Get-ChildItem "./scripts/windows" -Filter "*.ps1" | Sort-Object Name
+          $bundled = Get-ChildItem "./module/ITSupportOps/Scripts" -Filter "*.ps1" | Sort-Object Name
+
+          if ($source.Count -ne $bundled.Count) {
+            Write-Host "::error::File count mismatch: scripts/windows has $($source.Count), module/ITSupportOps/Scripts has $($bundled.Count)."
+            exit 1
+          }
+
+          $drift = $false
+          foreach ($file in $source) {
+            $counterpart = Join-Path "./module/ITSupportOps/Scripts" $file.Name
+            if (-not (Test-Path $counterpart)) {
+              Write-Host "::error::$($file.Name) exists in scripts/windows but not in module/ITSupportOps/Scripts."
+              $drift = $true
+              continue
+            }
+            $a = (Get-FileHash $file.FullName -Algorithm SHA256).Hash
+            $b = (Get-FileHash $counterpart -Algorithm SHA256).Hash
+            if ($a -ne $b) {
+              Write-Host "::error::$($file.Name) differs between scripts/windows and module/ITSupportOps/Scripts. Run ./tools/Build-Module.ps1 and commit the result."
+              $drift = $true
+            }
+          }
+
+          if ($drift) {
+            exit 1
+          }
+          Write-Host "module/ITSupportOps/Scripts is in sync with scripts/windows ($($source.Count) files match)."
+
   test-cli-linux:
     name: Execute itops CLI (simulated install)
     runs-on: ubuntu-latest
@@ -203,6 +242,6 @@ jobs:
   all-checks-passed:
     name: All checks passed
     runs-on: ubuntu-latest
-    needs: [smoke-test-powershell, smoke-test-bash, test-cli-linux, test-module-powershell]
+    needs: [smoke-test-powershell, smoke-test-bash, verify-module-sync, test-cli-linux, test-module-powershell]
     steps:
       - run: echo "Every script, the itops CLI, and the ITSupportOps module all linted and executed successfully."
