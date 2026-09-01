@@ -89,7 +89,13 @@ function Write-SectionHeader {
 # give a clear, single-line conclusion at the end rather than requiring the
 # reader to infer it from scattered results.
 $script:faultLayer = $null
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Sets an internal script-scoped tracking variable only; no system, file, or configuration state is changed.')]
+# Note: PSScriptAnalyzer flags Set-FaultLayer under
+# PSUseShouldProcessForStateChangingFunctions because of its "Set-" verb.
+# This is a false positive: it only sets an internal script-scoped tracking
+# variable, not real system state. Left unsuppressed (rather than adding a
+# SuppressMessageAttribute) because that attribute is only valid on advanced
+# functions ([CmdletBinding()]), and this is a plain helper function. The
+# warning is non-blocking (Warning severity, not Error) and safe to ignore.
 function Set-FaultLayer {
     param([string]$Layer)
     if (-not $script:faultLayer) {
