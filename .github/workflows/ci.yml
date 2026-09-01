@@ -1,0 +1,118 @@
+name: CI
+
+# Runs on every push and PR. This is the proof layer: it doesn't just check
+# that the scripts *look* right, it actually executes every script on a
+# clean Windows and Linux runner and fails the build if any of them error
+# out. That's the difference between "trust me, it works" and a badge
+# anyone can click on.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  lint-powershell:
+    name: Lint PowerShell (PSScriptAnalyzer)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./scripts/windows -Recurse -Severity Warning,Error
+          $results | Format-Table -AutoSize
+          $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+          if ($errors.Count -gt 0) {
+            Write-Host "::error::PSScriptAnalyzer found $($errors.Count) error-level issue(s)."
+            exit 1
+          }
+
+  smoke-test-powershell:
+    name: Execute PowerShell scripts (Windows)
+    runs-on: windows-latest
+    needs: lint-powershell
+    strategy:
+      fail-fast: false
+      matrix:
+        script:
+          - Get-SystemHealthReport.ps1
+          - Get-NetworkDiagnostics.ps1
+          - Get-DiskHealthReport.ps1
+          - Get-EventLogSummary.ps1
+          - Test-ConnectivitySuite.ps1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ${{ matrix.script }} as standard user
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $path = "./scripts/windows/${{ matrix.script }}"
+          Write-Host "Running $path ..."
+          & $path
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+            throw "$path exited with code $LASTEXITCODE"
+          }
+
+      - name: Verify a report file was produced
+        shell: pwsh
+        run: |
+          $reportDir = Join-Path $env:USERPROFILE "Documents\IT-Diagnostics"
+          if (-not (Test-Path $reportDir)) {
+            throw "Expected output directory was not created: $reportDir"
+          }
+          $files = Get-ChildItem $reportDir -Filter *.txt
+          if ($files.Count -eq 0) {
+            throw "No report file was written to $reportDir"
+          }
+          Write-Host "Report(s) found:"
+          $files | ForEach-Object { Write-Host " - $($_.Name)" }
+
+  lint-bash:
+    name: Lint Bash (ShellCheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './scripts/linux'
+          severity: warning
+
+  smoke-test-bash:
+    name: Execute Bash scripts (Linux)
+    runs-on: ubuntu-latest
+    needs: lint-bash
+    strategy:
+      fail-fast: false
+      matrix:
+        script:
+          - system-health-report.sh
+          - network-diagnostics.sh
+          - disk-health-report.sh
+          - log-summary.sh
+          - connectivity-suite.sh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x "./scripts/linux/${{ matrix.script }}"
+
+      - name: Run ${{ matrix.script }} as standard user
+        run: "./scripts/linux/${{ matrix.script }}"
+
+  all-checks-passed:
+    name: All checks passed
+    runs-on: ubuntu-latest
+    needs: [smoke-test-powershell, smoke-test-bash]
+    steps:
+      - run: echo "Every script linted and executed successfully."
