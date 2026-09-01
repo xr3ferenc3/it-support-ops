@@ -36,6 +36,12 @@
     instead of the default 20%.
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingWriteHost', '',
+    Justification = 'This is an interactive console diagnostic tool by design. ' +
+                    'Report content goes through Write-ReportLine (pipe-safe); ' +
+                    'Write-Host is used only for colored status/completion messages ' +
+                    'meant for a human reading the console.')]
 [CmdletBinding()]
 param(
     # Optional custom output path. Defaults to Documents\IT-Diagnostics.

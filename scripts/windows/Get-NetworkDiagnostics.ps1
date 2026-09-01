@@ -33,6 +33,12 @@
     resolution against a specified internal host.
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingWriteHost', '',
+    Justification = 'This is an interactive console diagnostic tool by design. ' +
+                    'Report content goes through Write-ReportLine (pipe-safe); ' +
+                    'Write-Host is used only for colored status/completion messages ' +
+                    'meant for a human reading the console.')]
 [CmdletBinding()]
 param(
     # Optional custom output path. Defaults to Documents\IT-Diagnostics.
@@ -88,6 +94,10 @@ function Write-SectionHeader {
 # give a clear, single-line conclusion at the end rather than requiring the
 # reader to infer it from scattered results.
 $script:faultLayer = $null
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseShouldProcessForStateChangingFunctions', '',
+    Justification = 'Sets an internal script-scoped tracking variable only; no ' +
+                    'system, file, or configuration state is changed.')]
 function Set-FaultLayer {
     param([string]$Layer)
     if (-not $script:faultLayer) {

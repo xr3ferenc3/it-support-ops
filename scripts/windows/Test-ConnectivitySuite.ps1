@@ -35,6 +35,12 @@
     internal host and a specific service port (e.g. SMB file sharing).
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingWriteHost', '',
+    Justification = 'This is an interactive console diagnostic tool by design. ' +
+                    'Report content goes through Write-ReportLine (pipe-safe); ' +
+                    'Write-Host is used only for colored status/completion messages ' +
+                    'meant for a human reading the console.')]
 [CmdletBinding()]
 param(
     # Optional custom output path. Defaults to Documents\IT-Diagnostics.
@@ -55,7 +61,13 @@ param(
     # as the most broadly applicable example if a host is supplied without
     # a specific port.
     [Parameter(Mandatory = $false)]
-    [int]$ServicePort = 443
+    [int]$ServicePort = 443,
+
+    # Destination for the final traceroute. Defaults to a public, well-known
+    # anycast address (Google Public DNS) so the traceroute stage always has
+    # a target, but this can be pointed at an internal host instead.
+    [Parameter(Mandatory = $false)]
+    [string]$TraceTarget = "8.8.8.8"
 )
 
 # ---------------------------------------------------------------------------
@@ -111,6 +123,10 @@ $script:stageResults = [ordered]@{
 }
 $script:faultBoundary = $null
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseShouldProcessForStateChangingFunctions', '',
+    Justification = 'Sets an internal script-scoped tracking variable only; no ' +
+                    'system, file, or configuration state is changed.')]
 function Set-StageResult {
     param([string]$Stage, [string]$Result)
     $script:stageResults[$Stage] = $Result
@@ -397,13 +413,13 @@ else {
 # TRACEROUTE (only run if a fault boundary was found beyond Stage 1)
 # ---------------------------------------------------------------------------
 
-Write-SectionHeader "TRACEROUTE TO 8.8.8.8"
+Write-SectionHeader "TRACEROUTE TO $TraceTarget"
 
 if ($script:stageResults["Stage 1 - Device Self-Test"] -eq "PASS") {
     try {
         Write-ReportLine "Running traceroute (this may take up to 30 seconds)..."
         Write-ReportLine ""
-        $trace = Test-NetConnection -ComputerName "8.8.8.8" -TraceRoute -ErrorAction Stop
+        $trace = Test-NetConnection -ComputerName $TraceTarget -TraceRoute -ErrorAction Stop
         $hopNumber = 1
         foreach ($hop in $trace.TraceRoute) {
             Write-ReportLine ("  Hop {0,-3} {1}" -f $hopNumber, $hop)
