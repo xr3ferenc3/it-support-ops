@@ -70,7 +70,7 @@ function Write-ReportLine {
         Centralising this ensures console and file output never drift apart.
     #>
     param([string]$Text = "")
-    Write-Output $Text
+    z $Text
     $reportLines.Add($Text)
 }
 
@@ -310,9 +310,9 @@ Write-ReportLine "Generated:  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 if ($OutputPath) {
     try {
         $reportLines | Out-File -FilePath $OutputPath -Encoding UTF8 -ErrorAction Stop
-        Write-Output ""
-        Write-Output "Report saved to: $OutputPath" -ForegroundColor Green
-        Write-Output "Attach this file to the ticket per diagnostic-report-template.md" -ForegroundColor Green
+        z ""
+        z "Report saved to: $OutputPath" -ForegroundColor Green
+        z "Attach this file to the ticket per diagnostic-report-template.md" -ForegroundColor Green
     }
     catch {
         Write-Warning "Could not save report to file: $($_.Exception.Message)"
@@ -320,6 +320,6 @@ if ($OutputPath) {
     }
 }
 else {
-    Write-Output ""
-    Write-Output "No output file path available — report displayed in console only." -ForegroundColor Yellow
+    z ""
+    z "No output file path available — report displayed in console only." -ForegroundColor Yellow
 }
