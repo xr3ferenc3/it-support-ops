@@ -1,8 +1,51 @@
 # IT Support Operations Center (`it-support-ops`)
 
+[![CI](https://github.com/xr3ferenc3/it-support-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/xr3ferenc3/it-support-ops/actions/workflows/ci.yml)
+
 > A structured IT support operations toolkit demonstrating professional troubleshooting methodology,
 > network diagnostics, endpoint triage, scripted automation, and incident documentation -
 > built to reflect real help desk and desktop support environments.
+
+---
+
+## Quickstart
+
+Every script here is linted and actually executed against real Windows and
+Linux runners on every push — see the CI badge above. Nothing in this repo
+ships without being run first.
+
+### Windows — PowerShell module
+
+```powershell
+git clone https://github.com/xr3ferenc3/it-support-ops.git
+cd it-support-ops
+Import-Module .\module\ITSupportOps -Force
+
+Get-ITSystemHealthReport
+Get-ITNetworkDiagnostics
+Test-ITConnectivitySuite -InternalHost fileserver.company.local -ServicePort 445
+```
+
+No administrator privileges required. Run `Get-Command -Module ITSupportOps`
+to see everything available.
+
+### Linux — one-line install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main/install.sh | bash
+itops health
+itops network -t intranet.company.local
+itops disk -l 15
+```
+
+Run `itops help` for the full command list, or `itops <command> -h` for
+options on a specific one.
+
+### Prefer to just grab a single script?
+
+Every script also works as a standalone file — clone the repo and run it
+directly from [`scripts/windows/`](scripts/windows/) or
+[`scripts/linux/`](scripts/linux/). No install required.
 
 ---
 
@@ -46,6 +89,19 @@ it-support-ops/
 ├── CHANGELOG.md                      ← Development and update history
 ├── LICENSE                           ← MIT License
 ├── CONTRIBUTING.md                   ← Contributing guidelines
+├── install.sh                        ← One-line installer for the itops CLI (Linux)
+│
+├── module/
+│   └── ITSupportOps/                 ← PowerShell module (Import-Module or Install-Module)
+│       ├── ITSupportOps.psd1
+│       ├── ITSupportOps.psm1
+│       └── Scripts/                  ← Generated from scripts/windows, see its README.md
+│
+├── cli/
+│   └── itops                         ← Bash CLI dispatcher, installed by install.sh
+│
+├── tools/
+│   └── Build-Module.ps1              ← Regenerates module/ITSupportOps/Scripts after a script change
 │
 ├── methodology/                      ← How to think before you act
 │   ├── troubleshooting-methodology.md
