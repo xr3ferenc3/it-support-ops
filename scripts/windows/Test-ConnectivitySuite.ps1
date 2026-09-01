@@ -35,12 +35,7 @@
     internal host and a specific service port (e.g. SMB file sharing).
 #>
 
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-    'PSAvoidUsingWriteHost', '',
-    Justification = 'This is an interactive console diagnostic tool by design. ' +
-                    'Report content goes through Write-ReportLine (pipe-safe); ' +
-                    'Write-Host is used only for colored status/completion messages ' +
-                    'meant for a human reading the console.')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive console tool by design: report content goes through Write-ReportLine (pipe-safe); Write-Host is used only for colored status messages meant for a human reading the console.')]
 [CmdletBinding()]
 param(
     # Optional custom output path. Defaults to Documents\IT-Diagnostics.
@@ -123,10 +118,7 @@ $script:stageResults = [ordered]@{
 }
 $script:faultBoundary = $null
 
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-    'PSUseShouldProcessForStateChangingFunctions', '',
-    Justification = 'Sets an internal script-scoped tracking variable only; no ' +
-                    'system, file, or configuration state is changed.')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Sets an internal script-scoped tracking variable only; no system, file, or configuration state is changed.')]
 function Set-StageResult {
     param([string]$Stage, [string]$Result)
     $script:stageResults[$Stage] = $Result
