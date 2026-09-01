@@ -45,6 +45,7 @@ it-support-ops/
 ├── README.md                         ← You are here
 ├── CHANGELOG.md                      ← Development and update history
 ├── LICENSE                           ← MIT License
+├── CONTRIBUTING.md                   ← Contributing guidelines
 │
 ├── methodology/                      ← How to think before you act
 │   ├── troubleshooting-methodology.md
