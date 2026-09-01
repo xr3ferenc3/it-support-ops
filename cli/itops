@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# itops - IT Support Ops toolkit CLI
+#
+# Thin dispatcher around the standalone scripts in scripts/linux. Logic is
+# never duplicated here: this file only routes to the scripts that are
+# linted (ShellCheck) and executed on a real Ubuntu runner in this repo's
+# CI (.github/workflows/ci.yml). One source of truth.
+#
+# Usage:
+#   itops <command> [options]
+#
+# Commands:
+#   health          Run full system health report
+#   network         Run network diagnostics
+#   disk            Run disk health report
+#   logs            Summarize recent system logs
+#   connectivity    Run staged connectivity fault-isolation suite
+#   version         Show itops version
+#   help            Show this help
+#
+# Run 'itops <command> -h' for command-specific options.
+#
+set -euo pipefail
+
+ITOPS_VERSION="1.0.0"
+
+# Resolve the real directory this script lives in, following symlinks
+# (itops is typically symlinked into ~/.local/bin by install.sh).
+resolve_itops_home() {
+    local src="${BASH_SOURCE[0]}"
+    while [ -h "$src" ]; do
+        local dir
+        dir="$(cd -P "$(dirname "$src")" >/dev/null 2>&1 && pwd)"
+        src="$(readlink "$src")"
+        [[ $src != /* ]] && src="$dir/$src"
+    done
+    cd -P "$(dirname "$src")" >/dev/null 2>&1 && pwd
+}
+
+ITOPS_HOME="$(resolve_itops_home)"
+SCRIPTS_DIR="$ITOPS_HOME/scripts"
+
+usage() {
+    sed -n '2,/^set -euo pipefail/p' "$0" | grep '^#' | sed -e 's/^#//' -e 's/^!.*//'
+}
+
+require_script() {
+    local script="$1"
+    local path="$SCRIPTS_DIR/$script"
+    if [ ! -f "$path" ]; then
+        echo "itops: bundled script not found: $path" >&2
+        echo "itops: your install looks incomplete or out of date. Re-run install.sh." >&2
+        exit 1
+    fi
+    echo "$path"
+}
+
+command="${1:-help}"
+[ $# -gt 0 ] && shift || true
+
+case "$command" in
+    health)
+        script="$(require_script system-health-report.sh)"
+        exec "$script" "$@"
+        ;;
+    network)
+        script="$(require_script network-diagnostics.sh)"
+        exec "$script" "$@"
+        ;;
+    disk)
+        script="$(require_script disk-health-report.sh)"
+        exec "$script" "$@"
+        ;;
+    logs)
+        script="$(require_script log-summary.sh)"
+        exec "$script" "$@"
+        ;;
+    connectivity)
+        script="$(require_script connectivity-suite.sh)"
+        exec "$script" "$@"
+        ;;
+    version|-v|--version)
+        echo "itops v${ITOPS_VERSION}"
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "itops: unknown command '$command'" >&2
+        echo >&2
+        usage >&2
+        exit 1
+        ;;
+esac

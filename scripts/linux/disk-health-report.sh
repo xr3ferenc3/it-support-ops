@@ -55,7 +55,7 @@ LOW_THRESHOLD=20
 CRITICAL_THRESHOLD=10
 
 usage() {
-    grep '^#' "$0" | sed -e 's/^#//' -e 's/^!.*//'
+    sed -n '2,/^set -uo pipefail/p' "$0" | grep '^#' | sed -e 's/^#//' -e 's/^!.*//'
     exit 0
 }
 

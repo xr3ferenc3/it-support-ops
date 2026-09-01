@@ -82,11 +82,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run ShellCheck
+      - name: Run ShellCheck on scripts/linux
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './scripts/linux'
           severity: warning
+
+      - name: ShellCheck itops CLI and installer
+        run: |
+          sudo apt-get update -y -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning cli/itops install.sh
 
   smoke-test-bash:
     name: Execute Bash scripts (Linux)
@@ -110,9 +116,93 @@ jobs:
       - name: Run ${{ matrix.script }} as standard user
         run: "./scripts/linux/${{ matrix.script }}"
 
+  test-cli-linux:
+    name: Execute itops CLI (simulated install)
+    runs-on: ubuntu-latest
+    needs: lint-bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Simulate a real user install (no sudo, no network)
+        run: |
+          set -euo pipefail
+          chmod +x cli/itops scripts/linux/*.sh
+          mkdir -p "$HOME/.itops/scripts" "$HOME/.local/bin"
+          cp scripts/linux/*.sh "$HOME/.itops/scripts/"
+          cp cli/itops "$HOME/.itops/itops"
+          chmod +x "$HOME/.itops/itops" "$HOME/.itops"/scripts/*.sh
+          ln -sf "$HOME/.itops/itops" "$HOME/.local/bin/itops"
+
+      - name: Run every itops command through the installed symlink
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$PATH"
+          itops help
+          itops version
+          for cmd in health network disk logs connectivity; do
+            echo "--- itops $cmd ---"
+            itops "$cmd"
+          done
+          echo "--- help pass-through for each subcommand ---"
+          for cmd in health network disk logs connectivity; do
+            itops "$cmd" -h
+          done
+
+      - name: Verify reports were written
+        run: |
+          set -euo pipefail
+          count=$(find "$HOME/it-diagnostics" -name '*.txt' | wc -l)
+          echo "Report files found: $count"
+          if [ "$count" -lt 5 ]; then
+            echo "::error::Expected at least 5 report files from itops, found $count"
+            exit 1
+          fi
+
+  test-module-powershell:
+    name: Import and execute ITSupportOps module (Windows)
+    runs-on: windows-latest
+    needs: lint-powershell
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import module and verify exported commands
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Import-Module ./module/ITSupportOps -Force
+          $cmds = Get-Command -Module ITSupportOps
+          $cmds | Format-Table Name
+          if ($cmds.Count -ne 5) {
+            throw "Expected 5 exported commands from ITSupportOps, found $($cmds.Count)"
+          }
+
+      - name: Run every exported cmdlet as a standard user
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Import-Module ./module/ITSupportOps -Force
+          Get-ITSystemHealthReport
+          Get-ITNetworkDiagnostics
+          Get-ITDiskHealthReport
+          Get-ITEventLogSummary
+          Test-ITConnectivitySuite
+
+      - name: Verify reports were written
+        shell: pwsh
+        run: |
+          $reportDir = Join-Path $env:USERPROFILE "Documents\IT-Diagnostics"
+          if (-not (Test-Path $reportDir)) {
+            throw "Expected output directory was not created: $reportDir"
+          }
+          $files = Get-ChildItem $reportDir -Filter *.txt
+          Write-Host "Report files found: $($files.Count)"
+          if ($files.Count -lt 5) {
+            throw "Expected at least 5 report files from the module, found $($files.Count)"
+          }
+
   all-checks-passed:
     name: All checks passed
     runs-on: ubuntu-latest
-    needs: [smoke-test-powershell, smoke-test-bash]
+    needs: [smoke-test-powershell, smoke-test-bash, test-cli-linux, test-module-powershell]
     steps:
-      - run: echo "Every script linted and executed successfully."
+      - run: echo "Every script, the itops CLI, and the ITSupportOps module all linted and executed successfully."
