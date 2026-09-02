@@ -11,10 +11,10 @@
 ## Quickstart
 
 Every script here is linted and actually executed against real Windows and
-Linux runners on every push — see the CI badge above. Nothing in this repo
+Linux runners on every push - see the CI badge above. Nothing in this repo
 ships without being run first.
 
-### Windows — PowerShell module
+### Windows - PowerShell module
 
 ```powershell
 git clone https://github.com/xr3ferenc3/it-support-ops.git
@@ -29,7 +29,7 @@ Test-ITConnectivitySuite -InternalHost fileserver.company.local -ServicePort 445
 No administrator privileges required. Run `Get-Command -Module ITSupportOps`
 to see everything available.
 
-### Linux — one-line install
+### Linux - one-line install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main/install.sh | bash
@@ -43,7 +43,7 @@ options on a specific one.
 
 ### Prefer to just grab a single script?
 
-Every script also works as a standalone file — clone the repo and run it
+Every script also works as a standalone file - clone the repo and run it
 directly from [`scripts/windows/`](scripts/windows/) or
 [`scripts/linux/`](scripts/linux/). No install required.
 
@@ -119,6 +119,8 @@ it-support-ops/
 │   ├── slow-network-performance.md
 │   ├── dns-resolution-failure.md
 │   ├── user-cannot-login.md
+│   ├── cloud-identity-mfa-issues.md
+│   ├── phishing-suspicious-email.md
 │   ├── application-not-launching.md
 │   ├── printer-not-working.md
 │   └── high-cpu-memory-usage.md
@@ -152,7 +154,9 @@ it-support-ops/
 ├── templates/                        ← Reusable operational templates
 │   ├── ticket-template.md
 │   ├── diagnostic-report-template.md
-│   └── change-request-template.md
+│   ├── change-request-template.md
+│   ├── new-hire-onboarding-checklist.md
+│   └── employee-offboarding-checklist.md
 │
 └── samples/                          ← Completed examples of templates in use
     ├── sample-diagnostic-report-windows.md

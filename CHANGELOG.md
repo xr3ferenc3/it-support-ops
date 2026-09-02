@@ -30,6 +30,45 @@ Changes staged for the next release are tracked here during active development.
 - Initial repository structure established
 - README with operational workflow, structure map, and usage guide
 - CHANGELOG with format reference and versioning convention
+- GitHub Actions CI (`.github/workflows/ci.yml`): lints and actually executes every
+  script on real Windows and Linux runners, executes the `itops` CLI end to end, and
+  imports/executes the `ITSupportOps` PowerShell module end to end
+- `module/ITSupportOps/` - installable PowerShell module wrapping the diagnostic
+  scripts as real cmdlets (`Get-ITSystemHealthReport`, `Get-ITNetworkDiagnostics`,
+  `Get-ITDiskHealthReport`, `Get-ITEventLogSummary`, `Test-ITConnectivitySuite`)
+- `cli/itops` and `install.sh` - one-line-installable CLI wrapping the Linux
+  diagnostic scripts (`itops health`, `itops network`, `itops disk`, `itops logs`,
+  `itops connectivity`)
+- `tools/Build-Module.ps1` - regenerates the module's bundled scripts from the
+  single source of truth in `scripts/windows`
+- `playbooks/cloud-identity-mfa-issues.md` - Entra ID, MFA, Conditional Access, and
+  hybrid device join troubleshooting, distinct from on-prem AD login issues
+- `playbooks/phishing-suspicious-email.md` - Tier 1 first-response actions for
+  suspected phishing, credential compromise, and malicious attachments
+- `templates/new-hire-onboarding-checklist.md` - phased IT provisioning checklist
+- `templates/employee-offboarding-checklist.md` - phased access-revocation checklist
+  with departure-type-specific timing
+
+### Changed
+- README: added CI status badge and a Quickstart section with real install commands
+  for both the PowerShell module and the `itops` CLI
+- README: repository structure tree updated to reflect `module/`, `cli/`, `tools/`,
+  `install.sh`, and the new playbooks/templates
+- `playbooks/user-cannot-login.md`: cross-linked to
+  `cloud-identity-mfa-issues.md` so cloud-identity failures are routed to the
+  correct playbook instead of being worked as an on-prem AD issue
+
+### Fixed
+- `scripts/windows/Test-ConnectivitySuite.ps1`: hardcoded traceroute target replaced
+  with a configurable `-TraceTarget` parameter (default unchanged)
+- `scripts/linux/*.sh`: `usage()` in all five scripts was printing the entire file's
+  comments instead of just the header block
+- CI: `SuppressMessageAttribute` is only valid on advanced PowerShell functions
+  (`[CmdletBinding()]`); removed the invalid attribute from two plain helper
+  functions and documented the underlying false positive as a comment instead
+- `module/ITSupportOps/Scripts` was committed with inconsistent casing
+  (`scripts` vs `Scripts`), invisible on case-insensitive Windows/macOS filesystems
+  but breaking on case-sensitive CI runners; corrected to match the module code
 
 ---
 

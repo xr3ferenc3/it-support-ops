@@ -23,6 +23,10 @@ Use this playbook when the user reports:
 Do not use this playbook if:
 - The issue is access to a specific application after successful OS login - this is
   an application-layer authentication issue, escalate per the application's owning team
+- The failure involves Microsoft Entra ID (Azure AD), MFA, Conditional Access, or
+  Microsoft 365 sign-in specifically - use
+  [`cloud-identity-mfa-issues.md`](cloud-identity-mfa-issues.md) instead, which covers
+  those scenarios in depth
 - The user suspects unauthorised account access - treat as a security event immediately
   per [`../methodology/escalation-matrix.md`](../methodology/escalation-matrix.md)
 
@@ -483,6 +487,7 @@ Escalate to Tier 2 when:
 | Document | Relationship |
 |---|---|
 | [`../methodology/escalation-matrix.md`](../methodology/escalation-matrix.md) | Security event and Tier 2 escalation criteria |
+| [`cloud-identity-mfa-issues.md`](cloud-identity-mfa-issues.md) | Entra ID, MFA, Conditional Access, and Microsoft 365 sign-in failures |
 | [`no-network-connectivity.md`](no-network-connectivity.md) | Use when slow/failed login correlates with network fault |
 | [`../incidents/incident-classification-guide.md`](../incidents/incident-classification-guide.md) | For suspected unauthorised access scenarios |
 | [`../templates/ticket-template.md`](../templates/ticket-template.md) | Ticket format for this scenario |
