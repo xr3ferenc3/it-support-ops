@@ -120,7 +120,10 @@ resolve_host() {
     echo "$ip"
 }
 
-declare -A STAGE_RESULTS
+# macOS ships bash 3.2 as /bin/bash by default (Apple has not updated the
+# bundled bash past 3.2 since it moved to GPLv3), which has no associative
+# arrays. Stage results are tracked as two parallel indexed arrays instead
+# of a hash map, which works identically on bash 3.2 through 5.x.
 STAGE_ORDER=(
     "Stage 1 - Device Self-Test"
     "Stage 2 - Gateway Reachability"
@@ -129,15 +132,39 @@ STAGE_ORDER=(
     "Stage 5 - DNS Resolution"
     "Stage 6 - Service Port Test"
 )
-for stage in "${STAGE_ORDER[@]}"; do
-    STAGE_RESULTS["$stage"]="NOT RUN"
-done
+STAGE_STATUS=("NOT RUN" "NOT RUN" "NOT RUN" "NOT RUN" "NOT RUN" "NOT RUN")
+
+stage_index() {
+    local stage="$1"
+    local i
+    for ((i = 0; i < ${#STAGE_ORDER[@]}; i++)); do
+        if [ "${STAGE_ORDER[$i]}" == "$stage" ]; then
+            echo "$i"
+            return 0
+        fi
+    done
+    echo "-1"
+}
+
+get_stage_result() {
+    local idx
+    idx=$(stage_index "$1")
+    if [ "$idx" -ge 0 ]; then
+        echo "${STAGE_STATUS[$idx]}"
+    else
+        echo "UNKNOWN"
+    fi
+}
 
 FAULT_BOUNDARY=""
 set_stage_result() {
     local stage="$1"
     local result="$2"
-    STAGE_RESULTS["$stage"]="$result"
+    local idx
+    idx=$(stage_index "$stage")
+    if [ "$idx" -ge 0 ]; then
+        STAGE_STATUS[$idx]="$result"
+    fi
     if [ "$result" == "FAIL" ] && [ -z "$FAULT_BOUNDARY" ]; then
         FAULT_BOUNDARY="$stage"
     fi
@@ -215,7 +242,7 @@ fi
 section_header "STAGE 2: GATEWAY REACHABILITY"
 
 GATEWAY=""
-if [ "${STAGE_RESULTS["Stage 1 - Device Self-Test"]}" == "PASS" ]; then
+if [ "$(get_stage_result "Stage 1 - Device Self-Test")" == "PASS" ]; then
     GATEWAY=$(route -n get default 2>/dev/null | awk '/gateway:/ {print $2}')
 
     if [ -n "$GATEWAY" ]; then
@@ -260,7 +287,7 @@ fi
 
 section_header "STAGE 3: INTERNAL NETWORK REACHABILITY"
 
-if [ "${STAGE_RESULTS["Stage 2 - Gateway Reachability"]}" == "PASS" ]; then
+if [ "$(get_stage_result "Stage 2 - Gateway Reachability")" == "PASS" ]; then
     if [ -n "$INTERNAL_HOST" ]; then
         INTERNAL_RESULT=$(ping -c 4 -t 4 "$INTERNAL_HOST" 2>/dev/null)
         INTERNAL_REPLIES=$(echo "$INTERNAL_RESULT" | awk -F',' '/packets transmitted/ {print $2}' | grep -oE '[0-9]+')
@@ -294,7 +321,7 @@ fi
 section_header "STAGE 4: INTERNET EGRESS"
 
 INTERNET_REACHABLE=0
-if [ "${STAGE_RESULTS["Stage 2 - Gateway Reachability"]}" == "PASS" ]; then
+if [ "$(get_stage_result "Stage 2 - Gateway Reachability")" == "PASS" ]; then
     for target in "8.8.8.8" "1.1.1.1"; do
         RESULT=$(ping -c 4 -t 6 "$target" 2>/dev/null)
         REPLIES=$(echo "$RESULT" | awk -F',' '/packets transmitted/ {print $2}' | grep -oE '[0-9]+')
@@ -328,7 +355,7 @@ fi
 
 section_header "STAGE 5: DNS RESOLUTION"
 
-if [ "${STAGE_RESULTS["Stage 4 - Internet Egress"]}" == "PASS" ]; then
+if [ "$(get_stage_result "Stage 4 - Internet Egress")" == "PASS" ]; then
     DNS_TARGETS=("google.com" "microsoft.com")
     DNS_FAILURES=0
 
@@ -400,7 +427,7 @@ fi
 
 section_header "TRACEROUTE TO $TRACE_TARGET"
 
-if [ "${STAGE_RESULTS["Stage 1 - Device Self-Test"]}" == "PASS" ]; then
+if [ "$(get_stage_result "Stage 1 - Device Self-Test")" == "PASS" ]; then
     if command -v traceroute >/dev/null 2>&1; then
         report_line "Running traceroute (this may take up to 30 seconds)..."
         report_line ""
@@ -426,7 +453,7 @@ report_line "Device:    $(hostname)"
 report_line ""
 report_line "STAGE RESULTS:"
 for stage in "${STAGE_ORDER[@]}"; do
-    printf -v PADDED_LINE "  %-35s %s" "$stage" "${STAGE_RESULTS[$stage]}"
+    printf -v PADDED_LINE "  %-35s %s" "$stage" "$(get_stage_result "$stage")"
     report_line "$PADDED_LINE"
 done
 
@@ -440,7 +467,7 @@ if [ -n "$FAULT_BOUNDARY" ]; then
 else
     SKIPPED_COUNT=0
     for stage in "${STAGE_ORDER[@]}"; do
-        if [ "${STAGE_RESULTS[$stage]}" == "SKIPPED" ]; then
+        if [ "$(get_stage_result "$stage")" == "SKIPPED" ]; then
             SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
         fi
     done

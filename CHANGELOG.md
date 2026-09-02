@@ -78,6 +78,10 @@ Changes staged for the next release are tracked here during active development.
 - `module/ITSupportOps/Scripts` was committed with inconsistent casing
   (`scripts` vs `Scripts`), invisible on case-insensitive Windows/macOS filesystems
   but breaking on case-sensitive CI runners; corrected to match the module code
+- `scripts/macos/connectivity-suite.sh`: used a bash 4+ associative array
+  (`declare -A`), which fails on macOS's default `/bin/bash` (Apple has shipped
+  bash 3.2 since moving to GPLv3 and has never updated it); rewritten with
+  parallel indexed arrays, which work identically on bash 3.2 through 5.x
 
 ---
 
