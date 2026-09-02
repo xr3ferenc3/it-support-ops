@@ -11,10 +11,10 @@
 ## Quickstart
 
 Every script here is linted and actually executed against real Windows and
-Linux runners on every push - see the CI badge above. Nothing in this repo
+Linux runners on every push — see the CI badge above. Nothing in this repo
 ships without being run first.
 
-### Windows - PowerShell module
+### Windows — PowerShell module
 
 ```powershell
 git clone https://github.com/xr3ferenc3/it-support-ops.git
@@ -29,7 +29,7 @@ Test-ITConnectivitySuite -InternalHost fileserver.company.local -ServicePort 445
 No administrator privileges required. Run `Get-Command -Module ITSupportOps`
 to see everything available.
 
-### Linux - one-line install
+### Linux / macOS — one-line install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main/install.sh | bash
@@ -38,14 +38,18 @@ itops network -t intranet.company.local
 itops disk -l 15
 ```
 
+The installer detects your platform automatically and installs the matching
+script set - no separate steps for Linux vs macOS.
+
 Run `itops help` for the full command list, or `itops <command> -h` for
 options on a specific one.
 
 ### Prefer to just grab a single script?
 
-Every script also works as a standalone file - clone the repo and run it
-directly from [`scripts/windows/`](scripts/windows/) or
-[`scripts/linux/`](scripts/linux/). No install required.
+Every script also works as a standalone file — clone the repo and run it
+directly from [`scripts/windows/`](scripts/windows/),
+[`scripts/linux/`](scripts/linux/), or [`scripts/macos/`](scripts/macos/).
+No install required.
 
 ---
 
@@ -132,7 +136,13 @@ it-support-ops/
 │   │   ├── Get-DiskHealthReport.ps1
 │   │   ├── Get-EventLogSummary.ps1
 │   │   └── Test-ConnectivitySuite.ps1
-│   └── linux/                        ← Bash diagnostic and automation scripts
+│   ├── linux/                        ← Bash diagnostic and automation scripts
+│   │   ├── system-health-report.sh
+│   │   ├── network-diagnostics.sh
+│   │   ├── disk-health-report.sh
+│   │   ├── log-summary.sh
+│   │   └── connectivity-suite.sh
+│   └── macos/                        ← Bash diagnostic and automation scripts (macOS-native)
 │       ├── system-health-report.sh
 │       ├── network-diagnostics.sh
 │       ├── disk-health-report.sh

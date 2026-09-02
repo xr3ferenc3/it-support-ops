@@ -48,8 +48,17 @@ Changes staged for the next release are tracked here during active development.
 - `templates/new-hire-onboarding-checklist.md` - phased IT provisioning checklist
 - `templates/employee-offboarding-checklist.md` - phased access-revocation checklist
   with departure-type-specific timing
+- `scripts/macos/` - macOS-native equivalents of all five diagnostic scripts
+  (system health, network diagnostics, disk health, log summary, connectivity
+  suite), using macOS-native tools (sysctl, vm_stat, diskutil, log show,
+  ifconfig/route) rather than porting Linux command assumptions; CI executes
+  all five for real on a macos-latest runner, matching the Windows/Linux
+  guarantee
 
 ### Changed
+- `install.sh` / `itops`: installer now detects the platform (Linux vs
+  macOS) via `uname -s` and installs the matching script set automatically -
+  the same `itops` CLI now works unmodified on both platforms
 - README: added CI status badge and a Quickstart section with real install commands
   for both the PowerShell module and the `itops` CLI
 - README: repository structure tree updated to reflect `module/`, `cli/`, `tools/`,

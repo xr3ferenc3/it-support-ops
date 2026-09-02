@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Installs the itops CLI (scripts/linux toolkit) for the current user.
-# No sudo required: installs into ~/.itops and symlinks into ~/.local/bin.
+# Installs the itops CLI (scripts/linux or scripts/macos toolkit, detected
+# automatically) for the current user. No sudo required: installs into
+# ~/.itops and symlinks into ~/.local/bin.
 #
 #   curl -fsSL https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main/install.sh | bash
 #
@@ -11,6 +12,21 @@ REPO_RAW="https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main"
 INSTALL_DIR="${ITOPS_INSTALL_DIR:-$HOME/.itops}"
 BIN_DIR="${ITOPS_BIN_DIR:-$HOME/.local/bin}"
 
+case "$(uname -s)" in
+    Darwin)
+        PLATFORM_DIR="macos"
+        ;;
+    Linux)
+        PLATFORM_DIR="linux"
+        ;;
+    *)
+        echo "itops: unsupported platform '$(uname -s)'. This installer supports" >&2
+        echo "Linux and macOS. Windows users should use the ITSupportOps PowerShell" >&2
+        echo "module instead — see module/ITSupportOps in the repository." >&2
+        exit 1
+        ;;
+esac
+
 SCRIPTS=(
     system-health-report.sh
     network-diagnostics.sh
@@ -19,11 +35,12 @@ SCRIPTS=(
     connectivity-suite.sh
 )
 
+echo "Detected platform: $(uname -s) — installing $PLATFORM_DIR toolkit"
 echo "Installing itops to $INSTALL_DIR ..."
 mkdir -p "$INSTALL_DIR/scripts" "$BIN_DIR"
 
 for s in "${SCRIPTS[@]}"; do
-    curl -fsSL "$REPO_RAW/scripts/linux/$s" -o "$INSTALL_DIR/scripts/$s"
+    curl -fsSL "$REPO_RAW/scripts/$PLATFORM_DIR/$s" -o "$INSTALL_DIR/scripts/$s"
     chmod +x "$INSTALL_DIR/scripts/$s"
 done
 
