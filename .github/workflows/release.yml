@@ -1,0 +1,123 @@
+name: Release ITSupportOps to PowerShell Gallery
+
+# Triggered by pushing a version tag, e.g.:
+#   git tag v1.0.0
+#   git push --tags
+#
+# Deliberately requires the tag to exactly match ModuleVersion in
+# module/ITSupportOps/ITSupportOps.psd1. This is not a formality - it's the
+# guard that prevents the single most common release mistake: tagging a
+# commit without bumping the manifest version first. Without this check,
+# Publish-Module would fail anyway (PSGallery rejects republishing an
+# existing version number) but with a confusing error deep in the publish
+# step instead of a clear message up front.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "publish" to confirm a manual release run'
+        required: true
+
+jobs:
+  publish:
+    name: Validate and publish to PSGallery
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm manual trigger input (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          if ("${{ github.event.inputs.confirm }}" -ne "publish") {
+            throw "Manual release run not confirmed. Re-run and type 'publish' exactly."
+          }
+
+      - name: Extract version from tag
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $tagVersion = $tag -replace '^v', ''
+          echo "TAG_VERSION=$tagVersion" >> $env:GITHUB_ENV
+
+      - name: Verify tag matches module manifest version
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $manifest = Import-PowerShellDataFile -Path ./module/ITSupportOps/ITSupportOps.psd1
+          $manifestVersion = $manifest.ModuleVersion
+          $tagVersion = "${{ env.TAG_VERSION }}"
+
+          Write-Host "Git tag version:      $tagVersion"
+          Write-Host "Manifest ModuleVersion: $manifestVersion"
+
+          if ($tagVersion -ne $manifestVersion) {
+            throw "Tag version ($tagVersion) does not match module/ITSupportOps/ITSupportOps.psd1 ModuleVersion ($manifestVersion). Bump ModuleVersion, commit, THEN tag - not the other way around. See RELEASING.md."
+          }
+
+      - name: Verify module scripts are in sync (defense in depth)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $source = Get-ChildItem "./scripts/windows" -Filter "*.ps1" | Sort-Object Name
+          $bundled = Get-ChildItem "./module/ITSupportOps/Scripts" -Filter "*.ps1" | Sort-Object Name
+          if ($source.Count -ne $bundled.Count) {
+            throw "scripts/windows and module/ITSupportOps/Scripts file counts differ. This should have been caught by the CI verify-module-sync job before merge - do not publish until that's green on main."
+          }
+          foreach ($file in $source) {
+            $a = (Get-FileHash $file.FullName -Algorithm SHA256).Hash
+            $b = (Get-FileHash (Join-Path "./module/ITSupportOps/Scripts" $file.Name) -Algorithm SHA256).Hash
+            if ($a -ne $b) {
+              throw "$($file.Name) differs between scripts/windows and module/ITSupportOps/Scripts. Do not publish out of sync."
+            }
+          }
+          Write-Host "Module scripts confirmed in sync."
+
+      - name: Validate module manifest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $result = Test-ModuleManifest -Path ./module/ITSupportOps/ITSupportOps.psd1
+          Write-Host "Manifest valid: $($result.Name) v$($result.Version)"
+
+      - name: Dry-run import (catches manifest/module load errors before publishing)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Import-Module ./module/ITSupportOps -Force
+          $cmds = Get-Command -Module ITSupportOps
+          Write-Host "Module imports cleanly with $($cmds.Count) exported command(s):"
+          $cmds | ForEach-Object { Write-Host "  - $($_.Name)" }
+          if ($cmds.Count -eq 0) {
+            throw "Module imported but exported zero commands - something is wrong."
+          }
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ([string]::IsNullOrWhiteSpace($env:PSGALLERY_API_KEY)) {
+            throw "PSGALLERY_API_KEY secret is not set. Add it under Settings > Secrets and variables > Actions before running this workflow."
+          }
+          Publish-Module -Path ./module/ITSupportOps -NuGetApiKey $env:PSGALLERY_API_KEY -Verbose
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'push'
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Published to PowerShell Gallery: https://www.powershellgallery.com/packages/ITSupportOps/${{ env.TAG_VERSION }}
+
+            Install with:
+            ```powershell
+            Install-Module ITSupportOps
+            ```

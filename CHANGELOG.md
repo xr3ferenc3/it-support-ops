@@ -64,6 +64,13 @@ Changes staged for the next release are tracked here during active development.
   `integrations/README.md` for setup and security notes
 - `itops send-ticket` and `Send-ITDiagnosticToTicket` (PowerShell module) -
   CLI and module wrappers around the Freshservice integration
+- `.github/workflows/release.yml` - publishes `ITSupportOps` to the
+  PowerShell Gallery on a version tag push, with hard verification that the
+  tag matches `ModuleVersion` in the manifest before publishing, plus a
+  defense-in-depth module-sync check and a dry-run import
+- `RELEASING.md` - the release process: version bump discipline, one-time
+  PSGallery API key setup, tagging order, and recovery steps if a release
+  goes wrong
 
 ### Changed
 - `install.sh` / `itops`: installer now detects the platform (Linux vs
