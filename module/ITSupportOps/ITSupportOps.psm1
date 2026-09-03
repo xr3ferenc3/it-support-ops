@@ -157,10 +157,41 @@ function Test-ITConnectivitySuite {
     Invoke-ITSupportScript -ScriptName 'Test-ConnectivitySuite.ps1' -BoundParameters $PSBoundParameters
 }
 
+function Send-ITDiagnosticToTicket {
+    <#
+    .SYNOPSIS
+        Attaches an IT support diagnostic report to an existing Freshservice ticket.
+    .DESCRIPTION
+        Module wrapper around Scripts\Send-ToFreshservice.ps1. Requires the
+        FRESHSERVICE_DOMAIN and FRESHSERVICE_API_KEY environment variables
+        to be set first. See integrations/README.md for setup instructions.
+    .EXAMPLE
+        $env:FRESHSERVICE_DOMAIN = "yourcompany.freshservice.com"
+        $env:FRESHSERVICE_API_KEY = "your-api-key"
+        Send-ITDiagnosticToTicket -TicketId 12345 -FilePath C:\IT-Diagnostics\report.txt
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$TicketId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Message = "Diagnostic report attached via it-support-ops.",
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Public
+    )
+    Invoke-ITSupportScript -ScriptName 'Send-ToFreshservice.ps1' -BoundParameters $PSBoundParameters
+}
+
 Export-ModuleMember -Function @(
     'Get-ITSystemHealthReport',
     'Get-ITNetworkDiagnostics',
     'Get-ITDiskHealthReport',
     'Get-ITEventLogSummary',
-    'Test-ITConnectivitySuite'
+    'Test-ITConnectivitySuite',
+    'Send-ITDiagnosticToTicket'
 )

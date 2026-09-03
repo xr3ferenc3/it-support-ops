@@ -37,12 +37,15 @@ SCRIPTS=(
 
 echo "Detected platform: $(uname -s) — installing $PLATFORM_DIR toolkit"
 echo "Installing itops to $INSTALL_DIR ..."
-mkdir -p "$INSTALL_DIR/scripts" "$BIN_DIR"
+mkdir -p "$INSTALL_DIR/scripts" "$INSTALL_DIR/integrations" "$BIN_DIR"
 
 for s in "${SCRIPTS[@]}"; do
     curl -fsSL "$REPO_RAW/scripts/$PLATFORM_DIR/$s" -o "$INSTALL_DIR/scripts/$s"
     chmod +x "$INSTALL_DIR/scripts/$s"
 done
+
+curl -fsSL "$REPO_RAW/integrations/send-to-freshservice.sh" -o "$INSTALL_DIR/integrations/send-to-freshservice.sh"
+chmod +x "$INSTALL_DIR/integrations/send-to-freshservice.sh"
 
 curl -fsSL "$REPO_RAW/cli/itops" -o "$INSTALL_DIR/itops"
 chmod +x "$INSTALL_DIR/itops"

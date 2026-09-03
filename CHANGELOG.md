@@ -54,6 +54,16 @@ Changes staged for the next release are tracked here during active development.
   ifconfig/route) rather than porting Linux command assumptions; CI executes
   all five for real on a macos-latest runner, matching the Windows/Linux
   guarantee
+- `integrations/send-to-freshservice.sh` and
+  `scripts/windows/Send-ToFreshservice.ps1` - attach a diagnostic report as a
+  note to an existing Freshservice ticket via the Freshservice API v2.
+  Deliberately scoped to attaching evidence to an existing ticket, not
+  creating one (ticket creation requires organization-specific required
+  fields this repo cannot safely assume). Credentials are read from
+  environment variables only, never CLI arguments. See
+  `integrations/README.md` for setup and security notes
+- `itops send-ticket` and `Send-ITDiagnosticToTicket` (PowerShell module) -
+  CLI and module wrappers around the Freshservice integration
 
 ### Changed
 - `install.sh` / `itops`: installer now detects the platform (Linux vs

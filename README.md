@@ -44,6 +44,19 @@ script set - no separate steps for Linux vs macOS.
 Run `itops help` for the full command list, or `itops <command> -h` for
 options on a specific one.
 
+### Attach a report straight to a ticket
+
+Once you've run a diagnostic, `itops send-ticket` (or
+`Send-ITDiagnosticToTicket` in the PowerShell module) attaches the report
+directly to an existing Freshservice ticket - no downloading and
+re-uploading through the web UI. Needs a one-time credential setup; see
+[`integrations/README.md`](integrations/README.md).
+
+```bash
+itops health
+itops send-ticket -t 12345 -f ~/it-diagnostics/system-health-report_*.txt
+```
+
 ### Prefer to just grab a single script?
 
 Every script also works as a standalone file — clone the repo and run it
@@ -135,7 +148,8 @@ it-support-ops/
 │   │   ├── Get-NetworkDiagnostics.ps1
 │   │   ├── Get-DiskHealthReport.ps1
 │   │   ├── Get-EventLogSummary.ps1
-│   │   └── Test-ConnectivitySuite.ps1
+│   │   ├── Test-ConnectivitySuite.ps1
+│   │   └── Send-ToFreshservice.ps1   ← Ticketing integration, see integrations/README.md
 │   ├── linux/                        ← Bash diagnostic and automation scripts
 │   │   ├── system-health-report.sh
 │   │   ├── network-diagnostics.sh
@@ -148,6 +162,10 @@ it-support-ops/
 │       ├── disk-health-report.sh
 │       ├── log-summary.sh
 │       └── connectivity-suite.sh
+│
+├── integrations/                     ← Optional ticketing integrations (opt-in, needs API credentials)
+│   ├── README.md                     ← Setup, security notes, and how to extend to other platforms
+│   └── send-to-freshservice.sh       ← Attach a diagnostic report to an existing Freshservice ticket
 │
 ├── reference/                        ← Operational command references
 │   ├── windows-command-reference.md

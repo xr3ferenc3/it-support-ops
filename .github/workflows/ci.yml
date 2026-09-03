@@ -88,11 +88,11 @@ jobs:
           scandir: './scripts/linux'
           severity: warning
 
-      - name: ShellCheck itops CLI and installer
+      - name: ShellCheck itops CLI, installer, and integrations
         run: |
           sudo apt-get update -y -qq
           sudo apt-get install -y -qq shellcheck
-          shellcheck -S warning cli/itops install.sh
+          shellcheck -S warning cli/itops install.sh integrations/*.sh
 
   lint-macos:
     name: Lint macOS scripts (ShellCheck)
@@ -199,11 +199,12 @@ jobs:
       - name: Simulate a real user install (no sudo, no network)
         run: |
           set -euo pipefail
-          chmod +x cli/itops scripts/linux/*.sh
-          mkdir -p "$HOME/.itops/scripts" "$HOME/.local/bin"
+          chmod +x cli/itops scripts/linux/*.sh integrations/*.sh
+          mkdir -p "$HOME/.itops/scripts" "$HOME/.itops/integrations" "$HOME/.local/bin"
           cp scripts/linux/*.sh "$HOME/.itops/scripts/"
+          cp integrations/*.sh "$HOME/.itops/integrations/"
           cp cli/itops "$HOME/.itops/itops"
-          chmod +x "$HOME/.itops/itops" "$HOME/.itops"/scripts/*.sh
+          chmod +x "$HOME/.itops/itops" "$HOME/.itops"/scripts/*.sh "$HOME/.itops"/integrations/*.sh
           ln -sf "$HOME/.itops/itops" "$HOME/.local/bin/itops"
 
       - name: Run every itops command through the installed symlink
@@ -220,6 +221,15 @@ jobs:
           for cmd in health network disk logs connectivity; do
             itops "$cmd" -h
           done
+          echo "--- send-ticket routing (no live credentials in CI, so only"
+          echo "    validation-path coverage: help text and clean failure"
+          echo "    on missing arguments) ---"
+          itops send-ticket -h
+          if itops send-ticket 2>/dev/null; then
+            echo "::error::itops send-ticket with no arguments should have failed"
+            exit 1
+          fi
+          echo "send-ticket correctly failed without required arguments"
 
       - name: Verify reports were written
         run: |
@@ -241,11 +251,12 @@ jobs:
       - name: Simulate a real user install (no sudo, no network)
         run: |
           set -euo pipefail
-          chmod +x cli/itops scripts/macos/*.sh
-          mkdir -p "$HOME/.itops/scripts" "$HOME/.local/bin"
+          chmod +x cli/itops scripts/macos/*.sh integrations/*.sh
+          mkdir -p "$HOME/.itops/scripts" "$HOME/.itops/integrations" "$HOME/.local/bin"
           cp scripts/macos/*.sh "$HOME/.itops/scripts/"
+          cp integrations/*.sh "$HOME/.itops/integrations/"
           cp cli/itops "$HOME/.itops/itops"
-          chmod +x "$HOME/.itops/itops" "$HOME/.itops"/scripts/*.sh
+          chmod +x "$HOME/.itops/itops" "$HOME/.itops"/scripts/*.sh "$HOME/.itops"/integrations/*.sh
           ln -sf "$HOME/.itops/itops" "$HOME/.local/bin/itops"
 
       - name: Run every itops command through the installed symlink
@@ -262,6 +273,15 @@ jobs:
           for cmd in health network disk logs connectivity; do
             itops "$cmd" -h
           done
+          echo "--- send-ticket routing (no live credentials in CI, so only"
+          echo "    validation-path coverage: help text and clean failure"
+          echo "    on missing arguments) ---"
+          itops send-ticket -h
+          if itops send-ticket 2>/dev/null; then
+            echo "::error::itops send-ticket with no arguments should have failed"
+            exit 1
+          fi
+          echo "send-ticket correctly failed without required arguments"
 
       - name: Verify reports were written
         run: |
@@ -287,8 +307,8 @@ jobs:
           Import-Module ./module/ITSupportOps -Force
           $cmds = Get-Command -Module ITSupportOps
           $cmds | Format-Table Name
-          if ($cmds.Count -ne 5) {
-            throw "Expected 5 exported commands from ITSupportOps, found $($cmds.Count)"
+          if ($cmds.Count -ne 6) {
+            throw "Expected 6 exported commands from ITSupportOps, found $($cmds.Count)"
           }
 
       - name: Run every exported cmdlet as a standard user
@@ -301,6 +321,10 @@ jobs:
           Get-ITDiskHealthReport
           Get-ITEventLogSummary
           Test-ITConnectivitySuite
+          # Send-ITDiagnosticToTicket is deliberately not run here: it requires
+          # live Freshservice credentials and a real ticket ID, neither of
+          # which exist in CI. Its lint/sync coverage comes from the
+          # PSScriptAnalyzer and verify-module-sync jobs instead.
 
       - name: Verify reports were written
         shell: pwsh

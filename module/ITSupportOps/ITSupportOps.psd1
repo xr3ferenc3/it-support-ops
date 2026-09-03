@@ -13,7 +13,8 @@
         'Get-ITNetworkDiagnostics',
         'Get-ITDiskHealthReport',
         'Get-ITEventLogSummary',
-        'Test-ITConnectivitySuite'
+        'Test-ITConnectivitySuite',
+        'Send-ITDiagnosticToTicket'
     )
     CmdletsToExport   = @()
     VariablesToExport = @()
@@ -21,7 +22,7 @@
 
     PrivateData = @{
         PSData = @{
-            Tags         = @('ITSupport', 'Helpdesk', 'Diagnostics', 'SysAdmin', 'Troubleshooting', 'Windows', 'NetworkDiagnostics')
+            Tags         = @('ITSupport', 'Helpdesk', 'Diagnostics', 'SysAdmin', 'Troubleshooting', 'Windows', 'NetworkDiagnostics', 'Freshservice', 'Ticketing')
             LicenseUri   = 'https://github.com/xr3ferenc3/it-support-ops/blob/main/LICENSE'
             ProjectUri   = 'https://github.com/xr3ferenc3/it-support-ops'
             ReleaseNotes = 'Initial module release wrapping the CI-verified diagnostic scripts from scripts/windows. See CHANGELOG.md for full history.'

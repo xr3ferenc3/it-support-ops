@@ -16,6 +16,9 @@
 #   disk            Run disk health report
 #   logs            Summarize recent system logs
 #   connectivity    Run staged connectivity fault-isolation suite
+#   send-ticket     Attach a diagnostic report to a Freshservice ticket
+#                   (requires FRESHSERVICE_DOMAIN / FRESHSERVICE_API_KEY -
+#                   see integrations/README.md)
 #   version         Show itops version
 #   help            Show this help
 #
@@ -40,6 +43,7 @@ resolve_itops_home() {
 
 ITOPS_HOME="$(resolve_itops_home)"
 SCRIPTS_DIR="$ITOPS_HOME/scripts"
+INTEGRATIONS_DIR="$ITOPS_HOME/integrations"
 
 usage() {
     sed -n '2,/^set -euo pipefail/p' "$0" | grep '^#' | sed -e 's/^#//' -e 's/^!.*//'
@@ -47,7 +51,8 @@ usage() {
 
 require_script() {
     local script="$1"
-    local path="$SCRIPTS_DIR/$script"
+    local dir="${2:-$SCRIPTS_DIR}"
+    local path="$dir/$script"
     if [ ! -f "$path" ]; then
         echo "itops: bundled script not found: $path" >&2
         echo "itops: your install looks incomplete or out of date. Re-run install.sh." >&2
@@ -78,6 +83,10 @@ case "$command" in
         ;;
     connectivity)
         script="$(require_script connectivity-suite.sh)"
+        exec "$script" "$@"
+        ;;
+    send-ticket)
+        script="$(require_script send-to-freshservice.sh "$INTEGRATIONS_DIR")"
         exec "$script" "$@"
         ;;
     version|-v|--version)
