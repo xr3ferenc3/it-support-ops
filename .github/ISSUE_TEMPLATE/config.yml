@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions or general discussion
+    url: https://github.com/xr3ferenc3/it-support-ops/blob/main/CONTRIBUTING.md
+    about: For anything that isn't a bug report or pilot feedback, see CONTRIBUTING.md for how to open an issue or start a discussion.

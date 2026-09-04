@@ -1,0 +1,82 @@
+name: Pilot Feedback
+description: You tried this on a real ticket. Tell us what actually happened.
+title: "[Pilot] "
+labels: ["pilot-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for actually trying this on real work - that's worth more than
+        any amount of code review. Be blunt. "This was confusing" or "I gave up
+        and did it manually" is exactly as useful as "this saved me 10 minutes."
+
+  - type: dropdown
+    id: what-used
+    attributes:
+      label: What did you use?
+      options:
+        - itops CLI (Linux/macOS)
+        - ITSupportOps PowerShell module
+        - A standalone script (cloned and ran directly)
+        - A playbook (troubleshooting guide, not a script)
+        - The Freshservice ticketing integration
+        - Something else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - N/A (just read a playbook)
+    validations:
+      required: true
+
+  - type: textarea
+    id: trying-to-do
+    attributes:
+      label: What were you actually trying to do?
+      description: The real situation, not a generic description - what ticket or problem prompted this?
+      placeholder: "e.g. user reported no internet, I ran the network diagnostics script to isolate whether it was DNS or the gateway"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What actually happened?
+      description: Worked as expected? Broke? Gave confusing output? Took longer than expected to figure out how to use? All useful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: friction
+    attributes:
+      label: What would have made this better?
+      description: Missing a flag, unclear output, a scenario it doesn't cover, docs that didn't match reality - anything.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: would-use-again
+    attributes:
+      label: Would you reach for this again on a similar ticket?
+      options:
+        - Yes, as-is
+        - Yes, if the issue above gets fixed
+        - Probably not
+        - No
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: attribution
+    attributes:
+      label: Attribution
+      options:
+        - label: It's fine to mention my feedback (not necessarily my name) if this gets referenced in a changelog or write-up
+          required: false

@@ -12,10 +12,10 @@
 ## Quickstart
 
 Every script here is linted and actually executed against real Windows and
-Linux runners on every push — see the CI badge above. Nothing in this repo
+Linux runners on every push - see the CI badge above. Nothing in this repo
 ships without being run first.
 
-### Windows — PowerShell module
+### Windows - PowerShell module
 
 ```powershell
 Install-Module ITSupportOps -Scope CurrentUser
@@ -28,7 +28,7 @@ Test-ITConnectivitySuite -InternalHost fileserver.company.local -ServicePort 445
 
 `-Scope CurrentUser` installs without requiring administrator privileges.
 Omitting it defaults to an all-users install, which does require an
-elevated (admin) PowerShell session — the cmdlets themselves never require
+elevated (admin) PowerShell session - the cmdlets themselves never require
 admin to *run*, only certain install scopes do.
 
 Prefer to run from source instead of installing from the Gallery?
@@ -42,7 +42,7 @@ Import-Module .\module\ITSupportOps -Force
 Either way, run `Get-Command -Module ITSupportOps` to see everything
 available.
 
-### Linux / macOS — one-line install
+### Linux / macOS - one-line install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/xr3ferenc3/it-support-ops/main/install.sh | bash
@@ -72,7 +72,7 @@ itops send-ticket -t 12345 -f ~/it-diagnostics/system-health-report_*.txt
 
 ### Prefer to just grab a single script?
 
-Every script also works as a standalone file — clone the repo and run it
+Every script also works as a standalone file - clone the repo and run it
 directly from [`scripts/windows/`](scripts/windows/),
 [`scripts/linux/`](scripts/linux/), or [`scripts/macos/`](scripts/macos/).
 No install required.

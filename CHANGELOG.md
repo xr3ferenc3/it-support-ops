@@ -71,6 +71,9 @@ Changes staged for the next release are tracked here during active development.
 - `RELEASING.md` - the release process: version bump discipline, one-time
   PSGallery API key setup, tagging order, and recovery steps if a release
   goes wrong
+- `.github/ISSUE_TEMPLATE/pilot-feedback.yml` and `bug-report.yml` -
+  structured issue forms so real-world pilot feedback and bug reports come
+  in comparable, actionable shape instead of free-form text
 
 ### Changed
 - `install.sh` / `itops`: installer now detects the platform (Linux vs
