@@ -1,6 +1,7 @@
 # IT Support Operations Center (`it-support-ops`)
 
 [![CI](https://github.com/xr3ferenc3/it-support-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/xr3ferenc3/it-support-ops/actions/workflows/ci.yml)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/v/ITSupportOps)](https://www.powershellgallery.com/packages/ITSupportOps)
 
 > A structured IT support operations toolkit demonstrating professional troubleshooting methodology,
 > network diagnostics, endpoint triage, scripted automation, and incident documentation -
@@ -17,17 +18,29 @@ ships without being run first.
 ### Windows — PowerShell module
 
 ```powershell
-git clone https://github.com/xr3ferenc3/it-support-ops.git
-cd it-support-ops
-Import-Module .\module\ITSupportOps -Force
+Install-Module ITSupportOps -Scope CurrentUser
+Import-Module ITSupportOps
 
 Get-ITSystemHealthReport
 Get-ITNetworkDiagnostics
 Test-ITConnectivitySuite -InternalHost fileserver.company.local -ServicePort 445
 ```
 
-No administrator privileges required. Run `Get-Command -Module ITSupportOps`
-to see everything available.
+`-Scope CurrentUser` installs without requiring administrator privileges.
+Omitting it defaults to an all-users install, which does require an
+elevated (admin) PowerShell session — the cmdlets themselves never require
+admin to *run*, only certain install scopes do.
+
+Prefer to run from source instead of installing from the Gallery?
+
+```powershell
+git clone https://github.com/xr3ferenc3/it-support-ops.git
+cd it-support-ops
+Import-Module .\module\ITSupportOps -Force
+```
+
+Either way, run `Get-Command -Module ITSupportOps` to see everything
+available.
 
 ### Linux / macOS — one-line install
 
