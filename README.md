@@ -119,7 +119,6 @@ it-support-ops/
 ├── CHANGELOG.md                      ← Development and update history
 ├── LICENSE                           ← MIT License
 ├── CONTRIBUTING.md                   ← Contributing guidelines
-├── RELEASING.md                      ← How a new module version gets published to PSGallery
 ├── install.sh                        ← One-line installer for the itops CLI (Linux)
 │
 ├── module/

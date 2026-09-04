@@ -1,0 +1,35 @@
+# OS junk
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# PowerShell
+*.ps1.bak
+
+# Local diagnostic report output, in case a script is ever run with -o
+# pointing inside the repo instead of the default $HOME/it-diagnostics
+it-diagnostics/
+*-diagnostics_*.txt
+
+# Defense in depth: this repo's design never stores credentials in files
+# (see integrations/README.md - env vars only), but these patterns are
+# ignored anyway in case anyone creates a local one while testing.
+.env
+.env.*
+*.pfx
+*api-key*
+*apikey*
+credentials.json
+secrets.yml
+secrets.yaml

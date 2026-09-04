@@ -63,7 +63,7 @@ jobs:
           Write-Host "Manifest ModuleVersion: $manifestVersion"
 
           if ($tagVersion -ne $manifestVersion) {
-            throw "Tag version ($tagVersion) does not match module/ITSupportOps/ITSupportOps.psd1 ModuleVersion ($manifestVersion). Bump ModuleVersion, commit, THEN tag - not the other way around. See RELEASING.md."
+            throw "Tag version ($tagVersion) does not match module/ITSupportOps/ITSupportOps.psd1 ModuleVersion ($manifestVersion). Bump ModuleVersion, commit, THEN tag - not the other way around. See .github/RELEASING.md."
           }
 
       - name: Verify module scripts are in sync (defense in depth)

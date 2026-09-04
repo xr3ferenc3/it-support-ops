@@ -68,14 +68,20 @@ Changes staged for the next release are tracked here during active development.
   PowerShell Gallery on a version tag push, with hard verification that the
   tag matches `ModuleVersion` in the manifest before publishing, plus a
   defense-in-depth module-sync check and a dry-run import
-- `RELEASING.md` - the release process: version bump discipline, one-time
+- `.github/RELEASING.md` - the release process: version bump discipline, one-time
   PSGallery API key setup, tagging order, and recovery steps if a release
   goes wrong
 - `.github/ISSUE_TEMPLATE/pilot-feedback.yml` and `bug-report.yml` -
   structured issue forms so real-world pilot feedback and bug reports come
   in comparable, actionable shape instead of free-form text
+- `.gitignore` - OS/editor junk, accidental local diagnostic-report output,
+  and a defense-in-depth block against ever committing credential-like files
 
 ### Changed
+- `RELEASING.md` moved to `.github/RELEASING.md` - it's a maintainer runbook
+  for cutting a release, not something a visitor browsing the repo root
+  needs to see; grouped it with the other maintainer-facing files
+  (workflows, issue templates) that already live in `.github/`
 - `install.sh` / `itops`: installer now detects the platform (Linux vs
   macOS) via `uname -s` and installs the matching script set automatically -
   the same `itops` CLI now works unmodified on both platforms
