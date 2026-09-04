@@ -26,6 +26,12 @@ jobs:
   publish:
     name: Validate and publish to PSGallery
     runs-on: windows-latest
+    # Required for the "Create GitHub Release" step. Many repos/orgs default
+    # the GITHUB_TOKEN to read-only, which causes that step to fail with a
+    # 403 "Resource not accessible by integration" even though the actual
+    # PSGallery publish (a separate, earlier step) succeeds independently.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
